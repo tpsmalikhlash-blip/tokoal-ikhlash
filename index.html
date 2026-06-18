@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Toko Al-Ikhlash — Kasir dan Keuangan</title>
+<title>Toko Al-Ikhlash — Kasir Usaha Mikro</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -390,7 +390,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </div>
           </div>
           <table class="tbl">
-            <thead><tr><th style="width:20%">Pelanggan</th><th style="width:12%">Tgl Utang</th><th style="width:12%">Tgl Lunas</th><th style="width:15%">Total</th><th style="width:15%">Dibayar</th><th style="width:13%">Sisa</th><th style="width:13%">Status</th></tr></thead>
+            <thead><tr><th style="width:17%">Pelanggan</th><th style="width:11%">Tgl Utang</th><th style="width:11%">Tgl Lunas</th><th style="width:13%">Total</th><th style="width:13%">Dibayar</th><th style="width:12%">Sisa</th><th style="width:11%">Status</th><th style="width:12%">Aksi</th></tr></thead>
             <tbody id="utb"></tbody>
           </table>
         </div>
@@ -599,7 +599,7 @@ function openPrintWin(html){const w=window.open('','_blank','width=900,height=65
    KONFIGURASI SUPABASE
    ⚠️ GANTI 2 NILAI DI BAWAH INI dengan milik Anda sendiri.
    Caranya: Buka project Supabase Anda → Project Settings → API
-   - SUPABASE_URL    = "https://sgepszppztvukrvhlbtu.supabase.co"
+   - SUPABASE_URL    = "Project URL"
    - SUPABASE_KEY    = "anon public" key
 ═══════════════════════════════════════ */
 const SUPABASE_URL = 'https://sgepszppztvukrvhlbtu.supabase.co';
@@ -640,6 +640,14 @@ const DC={'HEMAT10':10,'DISKON20':20,'PROMO5':5};
 let lastChartData={vals:[],labels:[]};
 let lastLRData={};
 let lastNeracaData={};
+let lastReceipt=null;
+
+// Printer state (Bluetooth thermal printer via Web Bluetooth, ESC/POS)
+let btPrinterDevice=null;
+let btPrinterChar=null;
+const TOKO_NAME='Toko Al-Ikhlash';
+const TOKO_ALAMAT='';      // isi alamat toko jika ingin tampil di struk
+const TOKO_TELP='';        // isi no. telp toko jika ingin tampil di struk
 
 /* ─── LOAD ALL DATA FROM SUPABASE ─── */
 async function loadAllData(){
@@ -968,7 +976,10 @@ async function confPay(total){
 
   TRX.unshift({id:trxId,items:itemsSnapshot,total,method:PMTH,change:chg,disc:DCODE,dp:DISC,time:trxTime,date:trxDate,by:CU.nm,byid:CU.id});
   logA(`TRX ${trxId} ${fmt(total)} oleh ${CU.nm}`);
-  const t=total,ch=chg,m=PMTH,id=trxId;clrCart();
+  const t=total,ch=chg,m=PMTH,id=trxId;
+  // Simpan snapshot struk untuk dicetak
+  lastReceipt={id:trxId,items:itemsSnapshot,total,method:PMTH,change:chg,disc:DCODE,dp:DISC,time:trxTime,date:trxDate,by:CU.nm,custName};
+  clrCart();
   document.getElementById('mc').innerHTML=`<div class="mwrap"><div class="modal" style="text-align:center">
     <div style="font-size:46px;margin:8px 0">✅</div>
     <div class="mt" style="justify-content:center">Pembayaran Berhasil!</div>
@@ -977,8 +988,185 @@ async function confPay(total){
     ${m==='tunai'?`<div class="mr"><span>Kembalian</span><span style="color:var(--green);font-weight:700">${fmt(ch)}</span></div>`:''}
     <div class="mr"><span>Kasir</span><span>${CU.nm}</span></div>
     <div class="mr"><span>ID</span><span>${id}</span></div>
-    <button class="cbtn" onclick="CM()" style="margin-top:12px"><i class="ti ti-check"></i> Selesai</button>
+    <button class="cbtn" onclick="printReceipt()" style="margin-top:12px;background:var(--td)"><i class="ti ti-printer"></i> Cetak Struk</button>
+    <button class="xbtn" onclick="CM()" style="margin-top:6px">Tutup</button>
   </div></div>`;rProds();
+}
+
+/* ═══════════════════════════════════════
+   CETAK STRUK / PRINTER
+═══════════════════════════════════════ */
+function printReceipt(){
+  if(!lastReceipt){N('Tidak ada struk untuk dicetak!');return}
+  document.getElementById('mc').innerHTML=`<div class="mwrap" onclick="if(event.target===this)CM()"><div class="modal">
+    <div class="mt"><i class="ti ti-printer"></i> Cetak Struk</div>
+    <div class="ibox" style="margin-bottom:10px">Pilih cara mencetak struk ${lastReceipt.id}:</div>
+    <button class="btn bp" style="width:100%;justify-content:center;margin-bottom:7px" onclick="printViaBrowser()"><i class="ti ti-printer"></i> Cetak via Printer Biasa / PDF</button>
+    <button class="btn bo" style="width:100%;justify-content:center;margin-bottom:7px" onclick="printViaBluetooth()"><i class="ti ti-bluetooth"></i> Cetak via Printer Thermal (Bluetooth)</button>
+    <div style="font-size:11px;color:var(--ink3);margin-top:4px;line-height:1.5">
+      <strong>Printer Biasa / PDF</strong> — membuka jendela cetak browser, cocok untuk printer apapun yang sudah terinstal di device ini (inkjet, laser, atau thermal yang terdaftar sebagai printer Windows/Android).<br><br>
+      <strong>Bluetooth Thermal</strong> — koneksi langsung ke printer kasir thermal 58mm/80mm yang mendukung Bluetooth Low Energy (umumnya printer thermal portable kasir). Browser harus Chrome/Edge di Android atau Desktop.
+    </div>
+    <button class="xbtn" onclick="CM()">Tutup</button>
+  </div></div>`;
+}
+
+/* ─── CETAK VIA BROWSER (window.print) ─── */
+function buildReceiptHTML(r){
+  const itemsHtml=r.items.map(it=>{
+    const sub=it.pr*it.q;
+    return `<tr><td colspan="2">${it.nm}</td></tr>
+    <tr><td>${it.q} x ${Math.round(it.pr).toLocaleString('id-ID')}</td><td style="text-align:right">${Math.round(sub).toLocaleString('id-ID')}</td></tr>`;
+  }).join('');
+  const sub=r.items.reduce((a,i)=>a+i.pr*i.q,0);
+  const discAmt=sub*r.dp/100;
+  return `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Struk ${r.id}</title>
+  <style>
+    @page{margin:0}
+    body{font-family:'Courier New',monospace;font-size:12px;width:280px;margin:0 auto;padding:10px;color:#000}
+    .center{text-align:center}
+    .line{border-top:1px dashed #000;margin:6px 0}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    td{padding:1px 0;vertical-align:top}
+    .tot-row td{font-weight:bold;font-size:13px}
+    .small{font-size:10px;color:#444}
+    h2{font-size:14px;margin:0 0 2px}
+  </style></head><body>
+  <div class="center">
+    <h2>${TOKO_NAME}</h2>
+    ${TOKO_ALAMAT?`<div class="small">${TOKO_ALAMAT}</div>`:''}
+    ${TOKO_TELP?`<div class="small">${TOKO_TELP}</div>`:''}
+  </div>
+  <div class="line"></div>
+  <table>
+    <tr><td>No. Struk</td><td style="text-align:right">${r.id}</td></tr>
+    <tr><td>Tanggal</td><td style="text-align:right">${r.time}</td></tr>
+    <tr><td>Kasir</td><td style="text-align:right">${r.by}</td></tr>
+    ${r.custName?`<tr><td>Pelanggan</td><td style="text-align:right">${r.custName}</td></tr>`:''}
+  </table>
+  <div class="line"></div>
+  <table>${itemsHtml}</table>
+  <div class="line"></div>
+  <table>
+    <tr><td>Subtotal</td><td style="text-align:right">${Math.round(sub).toLocaleString('id-ID')}</td></tr>
+    ${r.dp>0?`<tr><td>Diskon (${r.dp}%)</td><td style="text-align:right">-${Math.round(discAmt).toLocaleString('id-ID')}</td></tr>`:''}
+    <tr class="tot-row"><td>TOTAL</td><td style="text-align:right">Rp ${Math.round(r.total).toLocaleString('id-ID')}</td></tr>
+    <tr><td>Metode</td><td style="text-align:right">${r.method==='utang'?'UTANG':r.method.toUpperCase()}</td></tr>
+    ${r.method==='tunai'?`<tr><td>Tunai</td><td style="text-align:right">${Math.round(r.total+r.change).toLocaleString('id-ID')}</td></tr><tr><td>Kembali</td><td style="text-align:right">${Math.round(r.change).toLocaleString('id-ID')}</td></tr>`:''}
+  </table>
+  <div class="line"></div>
+  <div class="center small">Terima kasih telah berbelanja<br>Barang yang sudah dibeli tidak<br>dapat dikembalikan</div>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`;
+}
+function printViaBrowser(){
+  if(!lastReceipt){N('Tidak ada struk!');return}
+  const h=buildReceiptHTML(lastReceipt);
+  const w=window.open('','_blank','width=320,height=600');
+  if(w){w.document.write(h);w.document.close()}
+  CM();
+}
+
+/* ─── CETAK VIA BLUETOOTH (Web Bluetooth + ESC/POS) ─── */
+// UUID umum untuk printer thermal BLE (Serial Port Profile over BLE / SPP-like)
+const BT_SERVICE_UUID='000018f0-0000-1000-8000-00805f9b34fb';
+const BT_CHAR_UUID='00002af1-0000-1000-8000-00805f9b34fb';
+
+function escposEncode(r){
+  // Encoder ESC/POS sederhana: text + formatting dasar untuk printer thermal 58mm (32 kolom)
+  const enc=new TextEncoder();
+  const chunks=[];
+  const push=str=>chunks.push(enc.encode(str));
+  const ESC='\x1b', GS='\x1d';
+  push(ESC+'@'); // init
+  push(ESC+'a'+'\x01'); // center align
+  push(ESC+'!'+'\x10'); // double height untuk nama toko
+  push(TOKO_NAME+'\n');
+  push(ESC+'!'+'\x00'); // normal
+  if(TOKO_ALAMAT) push(TOKO_ALAMAT+'\n');
+  if(TOKO_TELP) push(TOKO_TELP+'\n');
+  push('--------------------------------\n');
+  push(ESC+'a'+'\x00'); // left align
+  push(`No: ${r.id}\n`);
+  push(`Tgl: ${r.time}\n`);
+  push(`Kasir: ${r.by}\n`);
+  if(r.custName) push(`Plgn: ${r.custName}\n`);
+  push('--------------------------------\n');
+  r.items.forEach(it=>{
+    push(`${it.nm}\n`);
+    const left=`${it.q} x ${Math.round(it.pr).toLocaleString('id-ID')}`;
+    const right=Math.round(it.pr*it.q).toLocaleString('id-ID');
+    const pad=Math.max(1,32-left.length-right.length);
+    push(left+' '.repeat(pad)+right+'\n');
+  });
+  push('--------------------------------\n');
+  const sub=r.items.reduce((a,i)=>a+i.pr*i.q,0);
+  const discAmt=sub*r.dp/100;
+  function row(label,val){const l=label,v=val;const pad=Math.max(1,32-l.length-v.length);return l+' '.repeat(pad)+v+'\n'}
+  push(row('Subtotal',Math.round(sub).toLocaleString('id-ID')));
+  if(r.dp>0) push(row(`Diskon (${r.dp}%)`,'-'+Math.round(discAmt).toLocaleString('id-ID')));
+  push(ESC+'!'+'\x10'); // double height for total
+  push(row('TOTAL','Rp'+Math.round(r.total).toLocaleString('id-ID')));
+  push(ESC+'!'+'\x00');
+  push(row('Metode',r.method==='utang'?'UTANG':r.method.toUpperCase()));
+  if(r.method==='tunai'){
+    push(row('Tunai',Math.round(r.total+r.change).toLocaleString('id-ID')));
+    push(row('Kembali',Math.round(r.change).toLocaleString('id-ID')));
+  }
+  push('--------------------------------\n');
+  push(ESC+'a'+'\x01');
+  push('Terima kasih\n');
+  push('\n\n\n');
+  push(GS+'V'+'\x00'); // partial cut (jika printer mendukung)
+  return new Blob(chunks).arrayBuffer();
+}
+
+async function printViaBluetooth(){
+  if(!lastReceipt){N('Tidak ada struk!');return}
+  if(!navigator.bluetooth){
+    N('Browser ini tidak mendukung Bluetooth. Gunakan Chrome/Edge di Android atau Desktop.');
+    return;
+  }
+  CM();
+  N('Mencari printer Bluetooth...');
+  try{
+    if(!btPrinterDevice){
+      btPrinterDevice=await navigator.bluetooth.requestDevice({
+        acceptAllDevices:true,
+        optionalServices:[BT_SERVICE_UUID,'000018f0-0000-1000-8000-00805f9b34fb','0000ff00-0000-1000-8000-00805f9b34fb']
+      });
+    }
+    const server=await btPrinterDevice.gatt.connect();
+    let service,char;
+    try{
+      service=await server.getPrimaryService(BT_SERVICE_UUID);
+      char=await service.getCharacteristic(BT_CHAR_UUID);
+    }catch(e){
+      // Fallback: cari service/characteristic writable pertama yang ditemukan
+      const services=await server.getPrimaryServices();
+      for(const s of services){
+        const chars=await s.getCharacteristics();
+        const writable=chars.find(c=>c.properties.write||c.properties.writeWithoutResponse);
+        if(writable){service=s;char=writable;break}
+      }
+    }
+    if(!char){N('Tidak menemukan jalur data printer. Printer mungkin tidak kompatibel.');return}
+    btPrinterChar=char;
+    const buf=await escposEncode(lastReceipt);
+    const bytes=new Uint8Array(buf);
+    const CHUNK=180; // beberapa printer BLE membatasi ukuran paket
+    for(let i=0;i<bytes.length;i+=CHUNK){
+      const chunk=bytes.slice(i,i+CHUNK);
+      if(char.properties.writeWithoutResponse) await char.writeValueWithoutResponse(chunk);
+      else await char.writeValue(chunk);
+    }
+    N('Struk terkirim ke printer!');
+    logA(`Struk ${lastReceipt.id} dicetak via Bluetooth oleh ${CU.nm}`);
+  }catch(e){
+    console.error(e);
+    if(e.name==='NotFoundError') N('Pemilihan printer dibatalkan.');
+    else N('Gagal mencetak: '+(e.message||'Periksa printer & koneksi Bluetooth'));
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -1090,12 +1278,50 @@ function exInvPrint(){
 function rUtang(){
   const q=(document.getElementById('utq').value||'').toLowerCase(),tb=document.getElementById('utb');
   const list=UTANG.filter(u=>u.nm.toLowerCase().includes(q));
-  if(!list.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--ink3)">Belum ada piutang</td></tr>`;return}
+  if(!list.length){tb.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:18px;color:var(--ink3)">Belum ada piutang</td></tr>`;return}
   tb.innerHTML=list.map(u=>{const sisa=u.total-u.dibayar;const lns=sisa<=0;
     return`<tr><td style="font-weight:600">${u.nm}</td><td>${u.tgU}</td><td>${u.tgL||'-'}</td><td>${fmt(u.total)}</td><td>${fmt(u.dibayar)}</td>
     <td style="font-weight:700;color:${sisa>0?'var(--red)':'var(--green)'}">${sisa>0?fmt(sisa):'LUNAS'}</td>
-    <td><span class="badge ${lns?'blns':'butg'}">${lns?'lunas':'utang'}</span></td></tr>`;
+    <td><span class="badge ${lns?'blns':'butg'}">${lns?'lunas':'utang'}</span></td>
+    <td><button class="bedit" onclick="editUtang('${u.id}')" title="Edit"><i class="ti ti-edit"></i></button><button class="bdel" onclick="delUtang('${u.id}')" title="Hapus"><i class="ti ti-trash"></i></button></td></tr>`;
   }).join('');
+}
+function editUtang(id){
+  const u=UTANG.find(x=>x.id===id);if(!u)return;
+  document.getElementById('mc').innerHTML=`<div class="mwrap" onclick="if(event.target===this)CM()"><div class="modal">
+    <div class="mt"><i class="ti ti-edit"></i> Edit Piutang</div>
+    <div style="margin-bottom:8px"><div class="lbl">Nama Pelanggan</div><input class="inp" id="eu-nm" value="${u.nm.replace(/"/g,'&quot;')}"/></div>
+    <div class="r2">
+      <div><div class="lbl">Total Belanja (Rp)</div><input class="inp" id="eu-total" type="number" value="${u.total}"/></div>
+      <div><div class="lbl">Sudah Dibayar (Rp)</div><input class="inp" id="eu-dibayar" type="number" value="${u.dibayar}"/></div>
+    </div>
+    <div style="margin-top:8px"><div class="lbl">Tanggal Utang</div><input class="inp" id="eu-tgu" type="date" value="${u.tgU}"/></div>
+    <div style="margin-top:8px"><div class="lbl">Catatan</div><input class="inp" id="eu-note" value="${(u.note||'').replace(/"/g,'&quot;')}"/></div>
+    <div class="ibox" style="background:var(--al);border-color:#fde68a;color:#92400e;margin-top:8px"><i class="ti ti-alert-triangle"></i> Mengubah total/dibayar tidak akan mengubah stok produk atau transaksi terkait.</div>
+    <button class="cbtn" onclick="saveUtangEdit('${u.id}')"><i class="ti ti-device-floppy"></i> Simpan Perubahan</button>
+    <button class="xbtn" onclick="CM()">Batal</button>
+  </div></div>`;
+}
+async function saveUtangEdit(id){
+  const u=UTANG.find(x=>x.id===id);if(!u)return;
+  const nm=document.getElementById('eu-nm').value.trim();
+  const total=parseFloat(document.getElementById('eu-total').value)||0;
+  const dibayar=Math.min(total,parseFloat(document.getElementById('eu-dibayar').value)||0);
+  const tgU=document.getElementById('eu-tgu').value||u.tgU;
+  const note=document.getElementById('eu-note').value.trim();
+  if(!nm||total<=0){N('Nama dan total wajib diisi!');return}
+  const tgL=dibayar>=total?(u.tgL||ts()):null;
+  const{error}=await sb.from('receivables').update({nm,total,dibayar,tg_utang:tgU,tg_lunas:tgL,note}).eq('id',id);
+  if(error){N('Gagal menyimpan: '+error.message);return}
+  Object.assign(u,{nm,total,dibayar,tgU,tgL,note});
+  CM();N('Piutang diperbarui!');logA(`Piutang ${id} (${nm}) diedit oleh ${CU.nm}`);rUtang();
+}
+async function delUtang(id){
+  const u=UTANG.find(x=>x.id===id);if(!u)return;
+  if(!confirm('Hapus catatan piutang "'+u.nm+'" sebesar '+fmt(u.total)+'?\n\nTindakan ini tidak dapat dibatalkan.'))return;
+  const{error}=await sb.from('receivables').delete().eq('id',id);
+  if(error){N('Gagal menghapus: '+error.message);return}
+  UTANG=UTANG.filter(x=>x.id!==id);rUtang();N('Catatan piutang dihapus');logA(`Piutang ${id} (${u.nm}) dihapus oleh ${CU.nm}`);
 }
 async function bayarUtang(){
   const nm=document.getElementById('utnm').value.trim(),bayar=parseFloat(document.getElementById('utbyr').value)||0,note=document.getElementById('utnote').value.trim();
