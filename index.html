@@ -290,76 +290,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
 
-    <!-- ── BELANJA INVENTORI (PEMBELIAN STOK) ── -->
-    <div id="view-belanja" style="display: none; padding: 20px;">
-      <h2 style="margin-bottom: 20px;"><i class="ti ti-truck-delivery"></i> Belanja Stok / Kulakan</h2>
-      <div style="background: var(--paper); border: 1px solid var(--brd); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-        <h3 style="font-size: 16px; margin-bottom: 15px;">Input Belanja Baru</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-          <div>
-            <label style="font-size: 12px; color: var(--ink2);">Tanggal Belanja</label><br>
-            <input type="date" id="bel-tgl" style="width: 100%; padding: 8px; border: 1px solid var(--brd2); border-radius: 6px;">
-          </div>
-          <div>
-            <label style="font-size: 12px; color: var(--ink2);">Nama Vendor / Supplier</label><br>
-            <input type="text" id="bel-vendor" placeholder="Contoh: Agen Makmur" style="width: 100%; padding: 8px; border: 1px solid var(--brd2); border-radius: 6px;">
-          </div>
-          <div>
-            <label style="font-size: 12px; color: var(--ink2);">Tipe Pembelian</label><br>
-            <select id="bel-tipe" style="width: 100%; padding: 8px; border: 1px solid var(--brd2); border-radius: 6px;">
-              <option value="modal">Modal Sendiri</option>
-              <option value="konsinyasi">Konsinyasi / Titipan</option>
-            </select>
-          </div>
-          <div>
-            <label style="font-size: 12px; color: var(--ink2);">Pilih Produk & Tambahkan</label><br>
-            <div style="display: flex; gap: 5px;">
-              <select id="bel-prod-sel" style="flex: 1; padding: 8px; border: 1px solid var(--brd2); border-radius: 6px;">
-                <option value="">-- Pilih Produk --</option>
-                </select>
-              <button onclick="addBelanjaItem()" style="padding: 0 15px; background: var(--teal); color: white; border: none; border-radius: 6px; cursor: pointer;">+</button>
-            </div>
-          </div>
-        </div>
-        <div style="border: 1px dashed var(--brd2); padding: 10px; border-radius: 6px; margin-bottom: 15px;">
-          <div id="bel-items">
-            </div>
-          <div style="text-align: right; margin-top: 10px; font-weight: bold;">
-            Total: Rp <span id="bel-total">0</span>
-          </div>
-        </div>
-        <div style="margin-bottom: 15px;">
-          <label style="font-size: 12px; color: var(--ink2);">Catatan (Opsional)</label><br>
-          <input type="text" id="bel-note" placeholder="Tulis catatan..." style="width: 100%; padding: 8px; border: 1px solid var(--brd2); border-radius: 6px;">
-        </div>
-        <div style="text-align: right;">
-          <button onclick="saveBelanja()" style="padding: 10px 20px; background: var(--blue); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
-            <i class="ti ti-device-floppy"></i> Simpan Belanja
-          </button>
-        </div>
-      </div>
-      <div style="background: var(--paper); border: 1px solid var(--brd); padding: 15px; border-radius: 10px;">
-        <h3 style="font-size: 16px; margin-bottom: 15px;">Riwayat Belanja</h3>
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left;">
-            <thead>
-              <tr style="border-bottom: 2px solid var(--brd); font-size: 13px; color: var(--ink2);">
-                <th style="padding: 10px;">Tgl</th>
-                <th style="padding: 10px;">Vendor</th>
-                <th style="padding: 10px;">Tipe</th>
-                <th style="padding: 10px;">Items (Qty)</th>
-                <th style="padding: 10px;">Total Modal</th>
-                <th style="padding: 10px;">Catatan</th>
-                <th style="padding: 10px;">Hapus</th>
-              </tr>
-            </thead>
-            <tbody id="bel-body">
-              </tbody>
-           </table>
-        </div>
-      </div>
-    </div>
-    
     <!-- ── INVENTORI ── -->
     <div id="page-inv" class="page">
       <div class="scr">
@@ -464,6 +394,88 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <tbody id="utb"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+
+    <!-- ── BELANJA INVENTORI ── -->
+    <div id="page-belanja" class="page">
+      <div class="scr">
+
+        <!-- Form Input Belanja -->
+        <div class="card">
+          <div class="sec">Input Belanja Stok Barang</div>
+          <div class="r3">
+            <div><div class="lbl">Tanggal Belanja</div><input class="inp" id="bel-tgl" type="date"/></div>
+            <div><div class="lbl">Vendor / Supplier</div><input class="inp" id="bel-vendor" placeholder="Nama toko / distributor"/></div>
+            <div><div class="lbl">Tipe Pembelian</div>
+              <select class="sel" id="bel-tipe">
+                <option value="modal">Modal Sendiri</option>
+                <option value="konsinyasi">Konsinyasi / Titip Jual</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <div class="lbl" style="margin-bottom:5px">Daftar Barang Belanja</div>
+            <!-- Pilih produk untuk ditambah -->
+            <div style="display:flex;gap:7px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+              <select class="sel" id="bel-prod-sel" style="flex:1;min-width:180px">
+                <option value="">— Pilih produk —</option>
+              </select>
+              <button class="btn bp" onclick="addBelanjaItem()"><i class="ti ti-plus"></i> Tambah Produk</button>
+              <button class="btn bo" onclick="openBelanjaNewProd()" title="Produk baru tidak ada di daftar?"><i class="ti ti-package"></i> Produk Baru</button>
+            </div>
+            <!-- Header kolom -->
+            <div style="display:grid;grid-template-columns:1fr 80px 90px 90px 28px;gap:6px;padding:4px 0;border-bottom:1px solid var(--brd);margin-bottom:4px">
+              <div style="font-size:10px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em">Produk</div>
+              <div style="font-size:10px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;text-align:center">Jumlah</div>
+              <div style="font-size:10px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;text-align:right">Harga Modal</div>
+              <div style="font-size:10px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;text-align:right">Harga Jual</div>
+              <div></div>
+            </div>
+            <div id="bel-items">
+              <div style="font-size:12px;color:var(--ink3);padding:10px 0;text-align:center">Belum ada item. Pilih produk di atas.</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;border-top:1px solid var(--brd)">
+              <span style="font-size:12px;color:var(--ink2)">Total Modal Belanja:</span>
+              <span id="bel-total" style="font-size:15px;font-weight:800;color:var(--td)">Rp 0</span>
+            </div>
+          </div>
+          <div style="margin-top:10px"><div class="lbl">Catatan</div><input class="inp" id="bel-note" placeholder="Catatan tambahan (opsional)"/></div>
+          <div class="ibox" style="margin-top:8px;background:var(--tl);border-color:var(--teal)">
+            <i class="ti ti-info-circle"></i> Menyimpan belanja akan <strong>menambah stok</strong> dan <strong>memperbarui harga modal/jual</strong> di inventori secara otomatis.
+            <br>Untuk produk <strong>Konsinyasi</strong>, stok juga ditambah tapi HPP tidak dihitung sebagai pengeluaran modal.
+          </div>
+          <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn bp" onclick="saveBelanja()"><i class="ti ti-device-floppy"></i> Simpan Belanja</button>
+            <button class="btn bo" onclick="belanjaItems=[];renderBelanjaItems()"><i class="ti ti-trash"></i> Reset</button>
+          </div>
+        </div>
+
+        <!-- Riwayat Belanja -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;flex-wrap:wrap;gap:6px">
+            <div class="sec" style="margin:0">Riwayat Belanja (<span id="bel-count">0</span>)</div>
+            <button class="exbtn" onclick="exBelanjaCSV()"><i class="ti ti-file-spreadsheet"></i> CSV</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:10%">Tanggal</th>
+                  <th style="width:18%">Vendor</th>
+                  <th style="width:13%">Tipe</th>
+                  <th style="width:28%">Barang</th>
+                  <th style="width:12%">Total Modal</th>
+                  <th style="width:12%">Catatan</th>
+                  <th style="width:7%">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="bel-body"></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1601,59 +1613,96 @@ function rLR(trxs,lbl,from,to){
   const revAll=trxs.reduce((a,t)=>a+t.total,0);
   const hpp=trxs.reduce((a,t)=>a+t.items.reduce((s,ci)=>{const p=PRODS.find(x=>x.id===ci.id);return s+(p?p.mod*ci.q:0)},0),0);
   const labaK=revAll-hpp;
-  // Filter jurnal SESUAI PERIODE agar laporan per-bulan/tahun akurat
-  const jPeriod=JURNAL.filter(j=>(!from||j.tgl>=from)&&(!to||j.tgl<=to));
-  // Beban operasional — tampilkan per akun
+
+  // Normalize dates: Postgres 'date' type may return "YYYY-MM-DD" string or Date object
+  const normDate=d=>{if(!d)return'';if(typeof d==='string')return d.slice(0,10);return new Date(d).toISOString().slice(0,10)};
+  const fromN=normDate(from), toN=normDate(to);
+
+  // Filter jurnal sesuai periode — pakai semua jurnal jika from/to kosong
+  const jPeriod=JURNAL.filter(j=>{
+    const jd=normDate(j.tgl);
+    return(!fromN||jd>=fromN)&&(!toN||jd<=toN);
+  });
+
+  // Beban per akun
   const bebanMap={};
-  jPeriod.filter(j=>j.akun.startsWith('Beban')).forEach(j=>{bebanMap[j.akun]=(bebanMap[j.akun]||0)+j.d});
+  jPeriod.filter(j=>j.akun&&j.akun.startsWith('Beban')).forEach(j=>{
+    bebanMap[j.akun]=(bebanMap[j.akun]||0)+j.d;
+  });
   const beban=Object.values(bebanMap).reduce((a,v)=>a+v,0);
+
   // Pendapatan lain-lain dari jurnal
   const pendLain=jPeriod.filter(j=>j.akun==='Pendapatan Lain-lain').reduce((a,j)=>a+j.k,0);
   const labaBersih=labaK-beban+pendLain;
-  lastLRData={lbl,revT,revU,revAll,hpp,labaK,bebanMap,beban,pendLain,labaBersih,from,to};
+
+  lastLRData={lbl,revT,revU,revAll,hpp,labaK,bebanMap,beban,pendLain,labaBersih,from:fromN,to:toN};
+
   const bebanRows=Object.entries(bebanMap).length>0
-    ?Object.entries(bebanMap).map(([ak,v])=>`<tr><td style="padding-left:20px">${ak}</td><td style="text-align:right">${fmt(v)}</td></tr>`).join('')
-    :`<tr><td style="padding-left:20px;color:var(--ink3);font-style:italic">Belum ada beban dicatat di jurnal untuk periode ini</td><td style="text-align:right">Rp 0</td></tr>`;
+    ?Object.entries(bebanMap).map(([ak,v])=>`<tr><td style="padding-left:20px">${ak}</td><td style="text-align:right">${fmt(v)}</td></tr>`).join('')+
+     `<tr class="fsub"><td>Total Beban Operasional</td><td style="text-align:right">${fmt(beban)}</td></tr>`
+    :`<tr><td style="padding-left:20px;color:var(--ink3);font-style:italic">Belum ada beban tercatat di jurnal untuk periode ${fromN}–${toN}</td><td style="text-align:right">Rp 0</td></tr>`;
+
   document.getElementById('lrel').innerHTML=`<table class="ftbl">
     <thead><tr><th colspan="2">Laporan Laba Rugi — ${lbl}</th></tr></thead>
     <tbody>
       <tr class="fsec"><td colspan="2">PENDAPATAN</td></tr>
       <tr><td style="padding-left:20px">Penjualan Tunai / Non-Tunai</td><td style="text-align:right">${fmt(revT)}</td></tr>
       <tr><td style="padding-left:20px">Penjualan Kredit (Utang)</td><td style="text-align:right">${fmt(revU)}</td></tr>
-      ${pendLain>0?`<tr><td style="padding-left:20px">Pendapatan Lain-lain</td><td style="text-align:right">${fmt(pendLain)}</td></tr>`:''}
+      ${pendLain>0?`<tr><td style="padding-left:20px">Pendapatan Lain-lain (Jurnal)</td><td style="text-align:right">${fmt(pendLain)}</td></tr>`:''}
       <tr class="fsub"><td>Total Pendapatan</td><td style="text-align:right">${fmt(revAll+pendLain)}</td></tr>
       <tr class="fsec"><td colspan="2">HARGA POKOK PENJUALAN</td></tr>
-      <tr><td style="padding-left:20px">HPP — Harga Modal × Terjual</td><td style="text-align:right">${fmt(hpp)}</td></tr>
+      <tr><td style="padding-left:20px">HPP — Harga Modal × Qty Terjual</td><td style="text-align:right">${fmt(hpp)}</td></tr>
       <tr class="fsub"><td>Laba Kotor</td><td style="text-align:right">${fmt(labaK)}</td></tr>
       <tr class="fsec"><td colspan="2">BEBAN OPERASIONAL (dari Jurnal)</td></tr>
       ${bebanRows}
-      ${beban>0?`<tr class="fsub"><td>Total Beban Operasional</td><td style="text-align:right">${fmt(beban)}</td></tr>`:''}
       <tr class="ftot"><td>LABA BERSIH</td><td style="text-align:right">${fmt(labaBersih)}</td></tr>
     </tbody>
-  </table>`;
+  </table>
+  <div style="font-size:11px;color:var(--ink3);margin-top:6px"><i class="ti ti-info-circle"></i> Beban diambil dari entri jurnal dengan akun "Beban ..." pada periode ${fromN} s.d. ${toN} (${jPeriod.length} entri jurnal ditemukan, ${jPeriod.filter(j=>j.akun&&j.akun.startsWith('Beban')).length} entri beban).</div>`;
 }
 
 function rNeraca(trxs,lbl,from,to){
-  // Kas = semua kas masuk dari penjualan tunai - kembalian + mutasi kas dari jurnal dalam periode
+  const normDate=d=>{if(!d)return'';if(typeof d==='string')return d.slice(0,10);return new Date(d).toISOString().slice(0,10)};
+  const toN=normDate(to);
+  // Neraca menggunakan SEMUA jurnal sampai akhir periode (saldo berjalan akumulatif)
+  const jAll=toN?JURNAL.filter(j=>normDate(j.tgl)<=toN):JURNAL;
   const kasM=trxs.filter(t=>t.method!=='utang').reduce((a,t)=>a+t.total-t.change,0);
-  const jAll=JURNAL; // Neraca menggunakan SEMUA jurnal (saldo berjalan), bukan hanya per periode
   const kasJ=jAll.filter(j=>j.akun==='Kas').reduce((a,j)=>a+j.d-j.k,0);
   const kas=Math.max(0,kasM+kasJ);
-  // Piutang = total utang yang belum lunas (semua waktu, bukan per periode)
   const piut=UTANG.reduce((a,u)=>a+Math.max(0,u.total-u.dibayar),0);
-  // Persediaan = stok saat ini × harga modal
   const pers=PRODS.reduce((a,p)=>a+p.stk*p.mod,0);
-  // Aktiva lain dari jurnal (Perlengkapan, Peralatan)
   const perlengkapan=Math.max(0,jAll.filter(j=>j.akun==='Perlengkapan Toko').reduce((a,j)=>a+j.d-j.k,0));
   const peralatan=Math.max(0,jAll.filter(j=>j.akun==='Peralatan').reduce((a,j)=>a+j.d-j.k,0));
   const totA=kas+piut+pers+perlengkapan+peralatan;
-  // Kewajiban
   const utgD=Math.max(0,jAll.filter(j=>j.akun==='Utang Dagang').reduce((a,j)=>a+j.k-j.d,0));
   const utgL=Math.max(0,jAll.filter(j=>j.akun==='Utang Lain-lain').reduce((a,j)=>a+j.k-j.d,0));
   const totK=utgD+utgL;
-  // Modal = Aktiva - Kewajiban
   const modal=Math.max(0,totA-totK);
   lastNeracaData={lbl,kas,piut,pers,perlengkapan,peralatan,totA,utgD,utgL,totK,modal};
+  document.getElementById('nrel').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <table class="ftbl"><thead><tr><th colspan="2">AKTIVA — per ${toN||lbl}</th></tr></thead>
+    <tbody>
+      <tr class="fsec"><td colspan="2">Aktiva Lancar</td></tr>
+      <tr><td style="padding-left:14px">Kas &amp; Bank</td><td style="text-align:right">${fmt(kas)}</td></tr>
+      <tr><td style="padding-left:14px">Piutang Usaha</td><td style="text-align:right">${fmt(piut)}</td></tr>
+      <tr><td style="padding-left:14px">Persediaan Barang</td><td style="text-align:right">${fmt(pers)}</td></tr>
+      ${perlengkapan>0||peralatan>0?`<tr class="fsec"><td colspan="2">Aktiva Tetap</td></tr>`:''}
+      ${perlengkapan>0?`<tr><td style="padding-left:14px">Perlengkapan Toko</td><td style="text-align:right">${fmt(perlengkapan)}</td></tr>`:''}
+      ${peralatan>0?`<tr><td style="padding-left:14px">Peralatan</td><td style="text-align:right">${fmt(peralatan)}</td></tr>`:''}
+      <tr class="ftot"><td>Total Aktiva</td><td style="text-align:right">${fmt(totA)}</td></tr>
+    </tbody></table>
+    <table class="ftbl"><thead><tr><th colspan="2">PASIVA — per ${toN||lbl}</th></tr></thead>
+    <tbody>
+      <tr class="fsec"><td colspan="2">Kewajiban</td></tr>
+      <tr><td style="padding-left:14px">Utang Dagang</td><td style="text-align:right">${fmt(utgD)}</td></tr>
+      ${utgL>0?`<tr><td style="padding-left:14px">Utang Lain-lain</td><td style="text-align:right">${fmt(utgL)}</td></tr>`:''}
+      ${totK>0?`<tr class="fsub"><td>Total Kewajiban</td><td style="text-align:right">${fmt(totK)}</td></tr>`:''}
+      <tr class="fsec"><td colspan="2">Ekuitas</td></tr>
+      <tr><td style="padding-left:14px">Modal Pemilik</td><td style="text-align:right">${fmt(modal)}</td></tr>
+      <tr class="ftot"><td>Total Pasiva</td><td style="text-align:right">${fmt(totA)}</td></tr>
+    </tbody></table>
+  </div>`;
+}
   document.getElementById('nrel').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <table class="ftbl"><thead><tr><th colspan="2">AKTIVA — per ${to||lbl}</th></tr></thead>
     <tbody>
@@ -1944,7 +1993,24 @@ async function delTrx(id){
    BELANJA INVENTORI (PEMBELIAN STOK)
 ═══════════════════════════════════════ */
 function rBelanja(){
+  // Isi tanggal default
+  const tglEl=document.getElementById('bel-tgl');
+  if(tglEl&&!tglEl.value) tglEl.value=ts();
+  // Isi dropdown produk
+  const sel=document.getElementById('bel-prod-sel');
+  if(sel){
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— Pilih produk —</option>'+
+      PRODS.map(p=>`<option value="${p.id}">${p.ico} ${p.nm} (stk: ${p.stk} ${p.sat})</option>`).join('');
+    if(cur) sel.value=cur;
+  }
+  // Render items yang sedang diedit
+  renderBelanjaItems();
+  // Render tabel riwayat
   const tb=document.getElementById('bel-body');
+  const cntEl=document.getElementById('bel-count');
+  if(cntEl) cntEl.textContent=BELANJA.length;
+  if(!tb) return;
   if(!BELANJA.length){
     tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--ink3)">Belum ada catatan belanja</td></tr>`;
   }else{
@@ -1952,14 +2018,12 @@ function rBelanja(){
       <td>${b.tgl}</td>
       <td>${b.vendor||'-'}</td>
       <td><span class="badge ${b.tipe==='konsinyasi'?'butg':'bok'}">${b.tipe==='konsinyasi'?'Konsinyasi':'Modal Sendiri'}</span></td>
-      <td>${b.items?b.items.map(i=>i.nm+' ×'+i.jml).join(', '):'-'}</td>
+      <td style="white-space:normal;line-height:1.5">${b.items?b.items.map(i=>`${i.nm} ×${i.jml} ${i.sat||''}`).join('<br>'):'-'}</td>
       <td>${fmt(b.total)}</td>
       <td>${b.note||'-'}</td>
       <td><button class="bdel" onclick="delBelanja('${b.id}')"><i class="ti ti-trash"></i></button></td>
     </tr>`).join('');
   }
-  // Render product rows in form
-  renderBelanjaItems();
 }
 
 let belanjaItems=[];  // item yang sedang diinput
@@ -1967,21 +2031,34 @@ let belanjaItems=[];  // item yang sedang diinput
 function renderBelanjaItems(){
   const cont=document.getElementById('bel-items');
   if(!cont)return;
-  cont.innerHTML=belanjaItems.length===0
-    ?'<div style="font-size:12px;color:var(--ink3);padding:8px 0">Belum ada item. Tambah produk di bawah.</div>'
-    :belanjaItems.map((it,i)=>`<div style="display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid var(--brd)">
-      <span style="font-size:16px">${it.ico}</span>
-      <div style="flex:1">
-        <div style="font-size:12px;font-weight:600">${it.nm}</div>
-        <div style="font-size:11px;color:var(--ink3)">${it.cat} · ${it.sat}</div>
+  if(!belanjaItems.length){
+    cont.innerHTML='<div style="font-size:12px;color:var(--ink3);padding:10px 0;text-align:center">Belum ada item. Pilih produk di atas.</div>';
+    const tel=document.getElementById('bel-total');if(tel)tel.textContent='Rp 0';
+    return;
+  }
+  cont.innerHTML=belanjaItems.map((it,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 80px 90px 90px 28px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--brd)">
+      <div style="display:flex;align-items:center;gap:6px;min-width:0">
+        <span style="font-size:17px;flex-shrink:0">${it.ico}</span>
+        <div style="min-width:0">
+          <div style="font-size:12px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.nm}</div>
+          <div style="font-size:10px;color:var(--ink3)">${it.cat} · ${it.sat}</div>
+        </div>
       </div>
-      <input type="number" step="0.01" min="0" value="${it.jml}" oninput="updateBelanjaItem(${i},'jml',this.value)" style="width:54px;padding:4px 6px;border:1.5px solid var(--brd2);border-radius:6px;font-size:12px;text-align:center;font-family:inherit"/>
-      <span style="font-size:11px;color:var(--ink3)">${it.sat}</span>
-      <input type="number" step="100" min="0" value="${it.hargaModal}" oninput="updateBelanjaItem(${i},'hargaModal',this.value)" placeholder="Modal/unit" style="width:80px;padding:4px 6px;border:1.5px solid var(--brd2);border-radius:6px;font-size:12px;font-family:inherit"/>
-      <input type="number" step="100" min="0" value="${it.hargaJual}" oninput="updateBelanjaItem(${i},'hargaJual',this.value)" placeholder="Jual/unit" style="width:80px;padding:4px 6px;border:1.5px solid var(--brd2);border-radius:6px;font-size:12px;font-family:inherit"/>
-      <button class="bdel" onclick="removeBelanjaItem(${i})"><i class="ti ti-x"></i></button>
+      <div style="display:flex;align-items:center;gap:2px">
+        <input type="number" step="0.01" min="0.01" value="${it.jml}" oninput="updateBelanjaItem(${i},'jml',this.value)"
+          style="width:100%;padding:5px 4px;border:1.5px solid var(--brd2);border-radius:6px;font-size:12px;text-align:center;font-family:inherit;background:var(--paper2);color:var(--ink)"/>
+      </div>
+      <div>
+        <input type="number" step="100" min="0" value="${it.hargaModal}" oninput="updateBelanjaItem(${i},'hargaModal',this.value)"
+          placeholder="Modal/unit" style="width:100%;padding:5px 6px;border:1.5px solid var(--brd2);border-radius:6px;font-size:11px;font-family:inherit;background:var(--paper2);color:var(--ink);text-align:right"/>
+      </div>
+      <div>
+        <input type="number" step="100" min="0" value="${it.hargaJual}" oninput="updateBelanjaItem(${i},'hargaJual',this.value)"
+          placeholder="Jual/unit" style="width:100%;padding:5px 6px;border:1.5px solid var(--brd2);border-radius:6px;font-size:11px;font-family:inherit;background:var(--paper2);color:var(--ink);text-align:right"/>
+      </div>
+      <button class="bdel" onclick="removeBelanjaItem(${i})" style="padding:4px 5px"><i class="ti ti-x"></i></button>
     </div>`).join('');
-  // Update total
   const total=belanjaItems.reduce((a,it)=>a+(it.hargaModal||0)*it.jml,0);
   const tel=document.getElementById('bel-total');if(tel)tel.textContent=fmt(total);
 }
@@ -1995,6 +2072,12 @@ function updateBelanjaItem(i,field,val){
 
 function removeBelanjaItem(i){belanjaItems.splice(i,1);renderBelanjaItems()}
 
+function openBelanjaNewProd(){
+  // Arahkan ke tab inventori untuk tambah produk baru
+  N('Tambahkan produk baru di tab Inventori, lalu kembali ke Belanja.');
+  if(document.getElementById('page-inv')) switchTab('inv');
+}
+
 function addBelanjaItem(){
   const sel=document.getElementById('bel-prod-sel');
   if(!sel||!sel.value){N('Pilih produk terlebih dahulu!');return}
@@ -2002,7 +2085,8 @@ function addBelanjaItem(){
   const p=PRODS.find(x=>x.id===pid);if(!p){N('Produk tidak ditemukan!');return}
   if(belanjaItems.find(x=>x.id===pid)){N('Produk sudah ada di daftar!');return}
   belanjaItems.push({id:pid,nm:p.nm,cat:p.cat,ico:p.ico,sat:p.sat,jml:1,hargaModal:p.mod,hargaJual:p.jual});
-  sel.value='';renderBelanjaItems();
+  sel.value='';
+  renderBelanjaItems();
 }
 
 async function saveBelanja(){
@@ -2046,6 +2130,16 @@ async function delBelanja(id){
   if(error){N('Gagal menghapus: '+error.message);return}
   BELANJA=BELANJA.filter(x=>x.id!==id);rBelanja();N('Catatan belanja dihapus');
   logA(`Belanja ${id} dihapus oleh ${CU.nm}`);
+}
+
+function exBelanjaCSV(){
+  if(!BELANJA.length){N('Belum ada data belanja!');return}
+  let csv='\uFEFF'+'Tanggal,Vendor,Tipe,Barang,Total Modal,Catatan\n';
+  BELANJA.forEach(b=>{
+    const items=b.items?b.items.map(i=>`${i.nm} x${i.jml}`).join('; '):'-';
+    csv+=`"${b.tgl}","${b.vendor||''}","${b.tipe}","${items}","${Math.round(b.total)}","${b.note||''}"\n`;
+  });
+  dlF(csv,'belanja-al-ikhlash-'+ts()+'.csv','text/csv');N('CSV belanja diekspor!');
 }
 
 /* ═══════════════════════════════════════
