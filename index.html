@@ -1703,29 +1703,6 @@ function rNeraca(trxs,lbl,from,to){
     </tbody></table>
   </div>`;
 }
-  document.getElementById('nrel').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <table class="ftbl"><thead><tr><th colspan="2">AKTIVA — per ${to||lbl}</th></tr></thead>
-    <tbody>
-      <tr class="fsec"><td colspan="2">Aktiva Lancar</td></tr>
-      <tr><td style="padding-left:14px">Kas &amp; Bank</td><td style="text-align:right">${fmt(kas)}</td></tr>
-      <tr><td style="padding-left:14px">Piutang Usaha</td><td style="text-align:right">${fmt(piut)}</td></tr>
-      <tr><td style="padding-left:14px">Persediaan Barang</td><td style="text-align:right">${fmt(pers)}</td></tr>
-      ${perlengkapan>0?`<tr class="fsec"><td colspan="2">Aktiva Tetap</td></tr><tr><td style="padding-left:14px">Perlengkapan Toko</td><td style="text-align:right">${fmt(perlengkapan)}</td></tr>`:''}
-      ${peralatan>0?`<tr><td style="padding-left:14px">Peralatan</td><td style="text-align:right">${fmt(peralatan)}</td></tr>`:''}
-      <tr class="ftot"><td>Total Aktiva</td><td style="text-align:right">${fmt(totA)}</td></tr>
-    </tbody></table>
-    <table class="ftbl"><thead><tr><th colspan="2">PASIVA — per ${to||lbl}</th></tr></thead>
-    <tbody>
-      <tr class="fsec"><td colspan="2">Kewajiban</td></tr>
-      <tr><td style="padding-left:14px">Utang Dagang</td><td style="text-align:right">${fmt(utgD)}</td></tr>
-      ${utgL>0?`<tr><td style="padding-left:14px">Utang Lain-lain</td><td style="text-align:right">${fmt(utgL)}</td></tr>`:''}
-      ${totK>0?`<tr class="fsub"><td>Total Kewajiban</td><td style="text-align:right">${fmt(totK)}</td></tr>`:''}
-      <tr class="fsec"><td colspan="2">Ekuitas</td></tr>
-      <tr><td style="padding-left:14px">Modal Pemilik</td><td style="text-align:right">${fmt(modal)}</td></tr>
-      <tr class="ftot"><td>Total Pasiva</td><td style="text-align:right">${fmt(totA)}</td></tr>
-    </tbody></table>
-  </div>`;
-}
 
 /* ─── CHART EXPORTS ─── */
 function exChartCSV(){
