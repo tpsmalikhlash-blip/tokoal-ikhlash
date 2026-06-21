@@ -2156,24 +2156,29 @@ function logA(msg){
    STARTUP — hubungkan ke Supabase & muat data
 ═══════════════════════════════════════ */
 async function startApp(){
-  const connected=initSupabase();
-  if(!connected) return; // pesan error sudah ditampilkan di initSupabase()
+  const connected = initSupabase();
+  if(!connected) return;
 
-  document.getElementById('loadmsg').textContent='Memuat data toko...';
-  const ok=await loadAllData();
-  if(!ok) return; // pesan error sudah ditampilkan di loadAllData()
+  document.getElementById('loadmsg').textContent = 'Memuat data toko...';
+  const ok = await loadAllData();
+  if(!ok) return;
 
-  document.getElementById('loadscr').style.display='none';
-  document.getElementById('lscr').style.display='flex';
+  document.getElementById('loadscr').style.display = 'none';
+  document.getElementById('lscr').style.display = 'flex';
 
-  rCatBar();rProds();rCart();
-  document.getElementById('jtgl').value=ts();
-  document.getElementById('jref').value='JRN-0001';
-  // close pickers on outside click
-  document.getElementById('ico-modal').addEventListener('click',function(e){if(e.target===this)closeIcoPicker()});
-  document.getElementById('clr-modal').addEventListener('click',function(e){if(e.target===this)closeClrPicker()});
+  rCatBar();
+  rProds();
+  rCart();
+  rBelanja(); // Sekarang sudah aman dipanggil
+  
+  document.getElementById('jtgl').value = ts();
+  document.getElementById('jref').value = 'JRN-0001';
+  
+  document.getElementById('ico-modal').addEventListener('click', function(e){ if(e.target === this) closeIcoPicker() });
+  document.getElementById('clr-modal').addEventListener('click', function(e){ if(e.target === this) closeClrPicker() });
 }
 
+// Jalankan aplikasi
 startApp();
 
 </script>
