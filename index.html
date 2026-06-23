@@ -354,9 +354,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;flex-wrap:wrap;gap:6px">
             <div class="sec" style="margin:0">Produk (<span id="pcnt">0</span>)</div>
-            <div class="expbar">
-              <button class="exbtn" onclick="exInvCSV()"><i class="ti ti-file-spreadsheet"></i> CSV</button>
-              <button class="exbtn" onclick="exInvPrint()"><i class="ti ti-printer"></i> Cetak</button>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <div style="position:relative">
+                <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--ink3);pointer-events:none"></i>
+                <input class="inp" id="inv-search" type="text" placeholder="Cari nama, barcode, kategori..." oninput="rInv()" style="padding-left:28px;width:220px;font-size:12px"/>
+              </div>
+              <div class="expbar" style="margin:0">
+                <button class="exbtn" onclick="exInvCSV()"><i class="ti ti-file-spreadsheet"></i> CSV</button>
+                <button class="exbtn" onclick="exInvPrint()"><i class="ti ti-printer"></i> Cetak</button>
+              </div>
             </div>
           </div>
           <div style="overflow-x:auto">
@@ -456,7 +462,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;flex-wrap:wrap;gap:6px">
             <div class="sec" style="margin:0">Riwayat Belanja (<span id="bel-count">0</span>)</div>
-            <button class="exbtn" onclick="exBelanjaCSV()"><i class="ti ti-file-spreadsheet"></i> CSV</button>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <div style="position:relative">
+                <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--ink3);pointer-events:none"></i>
+                <input class="inp" id="bel-search" type="text" placeholder="Cari barang, vendor, catatan..." oninput="rBelanja()" style="padding-left:28px;width:210px;font-size:12px"/>
+              </div>
+              <button class="exbtn" onclick="exBelanjaCSV()"><i class="ti ti-file-spreadsheet"></i> CSV</button>
+            </div>
           </div>
           <div style="overflow-x:auto">
             <table class="tbl">
@@ -513,9 +525,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;flex-wrap:wrap;gap:6px">
             <div class="sec" style="margin:0">Buku Jurnal Umum (<span id="jcnt">0</span> entri)</div>
-            <div class="expbar">
-              <button class="exbtn" onclick="exJCSV()"><i class="ti ti-file-spreadsheet"></i> CSV</button>
-              <button class="exbtn" onclick="printJ()"><i class="ti ti-printer"></i> Cetak</button>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <div style="position:relative">
+                <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--ink3);pointer-events:none"></i>
+                <input class="inp" id="j-search" type="text" placeholder="Cari tgl, ref, keterangan, akun..." oninput="rJ()" style="padding-left:28px;width:230px;font-size:12px"/>
+              </div>
+              <div class="expbar" style="margin:0">
+                <button class="exbtn" onclick="exJCSV()"><i class="ti ti-file-spreadsheet"></i> CSV</button>
+                <button class="exbtn" onclick="printJ()"><i class="ti ti-printer"></i> Cetak</button>
+              </div>
             </div>
           </div>
           <div style="overflow-x:auto">
@@ -1299,13 +1317,36 @@ function sBC(){const bc=(document.getElementById('bci').value||'').trim();const 
    INVENTORI
 ═══════════════════════════════════════ */
 function rInv(){
-  document.getElementById('pcnt').textContent=PRODS.length;
-  document.getElementById('invb').innerHTML=PRODS.map(p=>{
+  const q=(document.getElementById('inv-search')?.value||'').toLowerCase().trim();
+  const list=q
+    ?PRODS.filter(p=>
+        p.nm.toLowerCase().includes(q)||
+        (p.bc||'').toLowerCase().includes(q)||
+        (p.cat||'').toLowerCase().includes(q)||
+        (p.sat||'').toLowerCase().includes(q))
+    :PRODS;
+  document.getElementById('pcnt').textContent=q?`${list.length}/${PRODS.length}`:PRODS.length;
+  if(!list.length){
+    document.getElementById('invb').innerHTML=`<tr><td colspan="9" style="text-align:center;padding:18px;color:var(--ink3)">Tidak ada produk yang cocok dengan "<strong>${q}</strong>"</td></tr>`;
+    return;
+  }
+  document.getElementById('invb').innerHTML=list.map(p=>{
     const st=p.stk===0?'out':p.stk<=p.min?'low':'ok';
     const bc=st==='ok'?'bok':st==='low'?'blow':'bout';
     const lb=st==='ok'?'Aman':st==='low'?'Menipis':'Habis';
-    return`<tr><td>${p.ico} ${p.nm}</td><td style="font-family:monospace;font-size:10px">${p.bc}</td><td>${p.cat}</td><td>${fmt(p.jual)}</td><td>${fmt(p.mod)}</td><td><strong>${p.stk}</strong></td><td>${p.sat}</td><td><span class="badge ${bc}">${lb}</span></td>
-    <td><button class="bedit" onclick="editP(${p.id})"><i class="ti ti-edit"></i></button><button class="bdel" onclick="delP(${p.id})"><i class="ti ti-trash"></i></button></td></tr>`;
+    // Highlight match in name
+    const hl=txt=>q&&txt.toLowerCase().includes(q)?txt.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark style="background:#fef3c7;border-radius:2px">$1</mark>'):txt;
+    return`<tr>
+      <td>${p.ico} ${hl(p.nm)}</td>
+      <td style="font-family:monospace;font-size:10px">${hl(p.bc||'')}</td>
+      <td>${hl(p.cat||'')}</td>
+      <td>${fmt(p.jual)}</td>
+      <td>${fmt(p.mod)}</td>
+      <td><strong>${p.stk}</strong></td>
+      <td>${p.sat||''}</td>
+      <td><span class="badge ${bc}">${lb}</span></td>
+      <td><button class="bedit" onclick="editP(${p.id})"><i class="ti ti-edit"></i></button><button class="bdel" onclick="delP(${p.id})"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
   }).join('');
 }
 function editP(id){
@@ -1454,20 +1495,44 @@ function rJ(){
   const eid=document.getElementById('jeid').value;
   if(!eid) document.getElementById('jref').value=document.getElementById('jref').value||('JRN-'+String(JURNAL.length+1).padStart(4,'0'));
   const tb=document.getElementById('jb');
-  document.getElementById('jcnt').textContent=JURNAL.length;
-  if(!JURNAL.length){tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--ink3)">Belum ada entri jurnal</td></tr>`;return}
-  tb.innerHTML=JURNAL.map(j=>`<tr>
-    <td>${j.tgl}</td>
-    <td style="font-family:monospace;font-size:10px">${j.ref}</td>
-    <td style="white-space:normal;line-height:1.4">${j.ket}</td>
-    <td>${j.akun}</td>
+  const q=(document.getElementById('j-search')?.value||'').toLowerCase().trim();
+  const hl=txt=>q&&String(txt).toLowerCase().includes(q)
+    ?String(txt).replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark style="background:#fef3c7;border-radius:2px">$1</mark>')
+    :String(txt);
+  const list=q
+    ?JURNAL.filter(j=>
+        (j.tgl||'').includes(q)||
+        (j.ref||'').toLowerCase().includes(q)||
+        (j.ket||'').toLowerCase().includes(q)||
+        (j.akun||'').toLowerCase().includes(q))
+    :JURNAL;
+  // Hitung total debet/kredit dari hasil filter (atau semua jika tidak filter)
+  const totD=list.reduce((a,j)=>a+j.d,0);
+  const totK=list.reduce((a,j)=>a+j.k,0);
+  document.getElementById('jcnt').textContent=q?`${list.length}/${JURNAL.length}`:JURNAL.length;
+  if(!list.length){
+    tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--ink3)">${JURNAL.length?'Tidak ada entri yang cocok dengan "<strong>'+q+'</strong>"':'Belum ada entri jurnal'}</td></tr>`;
+    return;
+  }
+  tb.innerHTML=list.map(j=>`<tr>
+    <td>${hl(j.tgl)}</td>
+    <td style="font-family:monospace;font-size:10px">${hl(j.ref)}</td>
+    <td style="white-space:normal;line-height:1.4">${hl(j.ket)}</td>
+    <td>${hl(j.akun)}</td>
     <td style="text-align:right;color:var(--td)">${j.d>0?fmt(j.d):''}</td>
     <td style="text-align:right;color:var(--amber)">${j.k>0?fmt(j.k):''}</td>
     <td>
       <button class="bedit" onclick="editJ(${j.id})" title="Edit"><i class="ti ti-edit"></i></button>
       <button class="bdel" onclick="delJ(${j.id})" title="Hapus"><i class="ti ti-trash"></i></button>
     </td>
-  </tr>`).join('');
+  </tr>`).join('')
+  +`<tr style="background:var(--tl)">
+    <td colspan="3" style="font-weight:700;font-size:11px;color:var(--td);padding:6px 8px">TOTAL${q?' (hasil filter)':''}</td>
+    <td></td>
+    <td style="text-align:right;font-weight:700;color:var(--td)">${fmt(totD)}</td>
+    <td style="text-align:right;font-weight:700;color:var(--amber)">${fmt(totK)}</td>
+    <td></td>
+  </tr>`;
 }
 function editJ(id){
   const j=JURNAL.find(x=>x.id===id);if(!j)return;
@@ -1983,24 +2048,38 @@ function rBelanja(){
   }
   // Render items yang sedang diedit
   renderBelanjaItems();
-  // Render tabel riwayat
+  // Filter & render tabel riwayat
+  const q=(document.getElementById('bel-search')?.value||'').toLowerCase().trim();
+  const hl=txt=>q&&String(txt).toLowerCase().includes(q)
+    ?String(txt).replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark style="background:#fef3c7;border-radius:2px">$1</mark>')
+    :String(txt);
+  const list=q
+    ?BELANJA.filter(b=>{
+        const itemTxt=b.items?b.items.map(i=>i.nm).join(' '):'' ;
+        return b.tgl?.includes(q)||
+          (b.vendor||'').toLowerCase().includes(q)||
+          (b.tipe||'').toLowerCase().includes(q)||
+          itemTxt.toLowerCase().includes(q)||
+          (b.note||'').toLowerCase().includes(q);
+      })
+    :BELANJA;
   const tb=document.getElementById('bel-body');
   const cntEl=document.getElementById('bel-count');
-  if(cntEl) cntEl.textContent=BELANJA.length;
+  if(cntEl) cntEl.textContent=q?`${list.length}/${BELANJA.length}`:BELANJA.length;
   if(!tb) return;
-  if(!BELANJA.length){
-    tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--ink3)">Belum ada catatan belanja</td></tr>`;
-  }else{
-    tb.innerHTML=BELANJA.map(b=>`<tr>
-      <td>${b.tgl}</td>
-      <td>${b.vendor||'-'}</td>
-      <td><span class="badge ${b.tipe==='konsinyasi'?'butg':'bok'}">${b.tipe==='konsinyasi'?'Konsinyasi':'Modal Sendiri'}</span></td>
-      <td style="white-space:normal;line-height:1.5">${b.items?b.items.map(i=>`${i.nm} ×${i.jml} ${i.sat||''}`).join('<br>'):'-'}</td>
-      <td>${fmt(b.total)}</td>
-      <td>${b.note||'-'}</td>
-      <td><button class="bdel" onclick="delBelanja('${b.id}')"><i class="ti ti-trash"></i></button></td>
-    </tr>`).join('');
+  if(!list.length){
+    tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--ink3)">${BELANJA.length?'Tidak ada hasil untuk "<strong>'+q+'</strong>"':'Belum ada catatan belanja'}</td></tr>`;
+    return;
   }
+  tb.innerHTML=list.map(b=>`<tr>
+    <td>${hl(b.tgl)}</td>
+    <td>${hl(b.vendor||'-')}</td>
+    <td><span class="badge ${b.tipe==='konsinyasi'?'butg':'bok'}">${b.tipe==='konsinyasi'?'Konsinyasi':'Modal Sendiri'}</span></td>
+    <td style="white-space:normal;line-height:1.5">${b.items?b.items.map(i=>`${hl(i.nm)} ×${i.jml} ${i.sat||''}`).join('<br>'):'-'}</td>
+    <td>${fmt(b.total)}</td>
+    <td>${hl(b.note||'-')}</td>
+    <td><button class="bdel" onclick="delBelanja('${b.id}')"><i class="ti ti-trash"></i></button></td>
+  </tr>`).join('');
 }
 
 let belanjaItems=[];  // item yang sedang diinput
@@ -2133,29 +2212,24 @@ function logA(msg){
    STARTUP — hubungkan ke Supabase & muat data
 ═══════════════════════════════════════ */
 async function startApp(){
-  const connected = initSupabase();
-  if(!connected) return;
+  const connected=initSupabase();
+  if(!connected) return; // pesan error sudah ditampilkan di initSupabase()
 
-  document.getElementById('loadmsg').textContent = 'Memuat data toko...';
-  const ok = await loadAllData();
-  if(!ok) return;
+  document.getElementById('loadmsg').textContent='Memuat data toko...';
+  const ok=await loadAllData();
+  if(!ok) return; // pesan error sudah ditampilkan di loadAllData()
 
-  document.getElementById('loadscr').style.display = 'none';
-  document.getElementById('lscr').style.display = 'flex';
+  document.getElementById('loadscr').style.display='none';
+  document.getElementById('lscr').style.display='flex';
 
-  rCatBar();
-  rProds();
-  rCart();
-  rBelanja(); // Sekarang sudah aman dipanggil
-  
-  document.getElementById('jtgl').value = ts();
-  document.getElementById('jref').value = 'JRN-0001';
-  
-  document.getElementById('ico-modal').addEventListener('click', function(e){ if(e.target === this) closeIcoPicker() });
-  document.getElementById('clr-modal').addEventListener('click', function(e){ if(e.target === this) closeClrPicker() });
+  rCatBar();rProds();rCart();
+  document.getElementById('jtgl').value=ts();
+  document.getElementById('jref').value='JRN-0001';
+  // close pickers on outside click
+  document.getElementById('ico-modal').addEventListener('click',function(e){if(e.target===this)closeIcoPicker()});
+  document.getElementById('clr-modal').addEventListener('click',function(e){if(e.target===this)closeClrPicker()});
 }
 
-// Jalankan aplikasi
 startApp();
 
 </script>
