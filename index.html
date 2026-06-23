@@ -1066,7 +1066,7 @@ async function confPay(total){
 
   const chg=PMTH==='tunai'?(parseFloat(document.getElementById('cashin').value)||0)-total:0;
   const itemsSnapshot=[...CART.map(c=>({...c}))];
-  const trxId='TRX'+String(TRX.length+1).padStart(4,'0');
+  const trxId='TRX-'+Date.now();
   const trxTime=ns(), trxDate=ts();
 
   // 1. Simpan transaksi
@@ -1088,7 +1088,7 @@ async function confPay(total){
 
   // 3. Jika utang, simpan ke tabel receivables
   if(PMTH==='utang'){
-    const utgId='UTG-'+String(UTANG.length+1).padStart(4,'0');
+    const utgId='UTG-'+Date.now();
     const{data,error}=await sb.from('receivables').insert({
       id:utgId,nm:custName,items:itemsSnapshot,total,dibayar:0,tg_utang:trxDate,tg_lunas:null,note:''
     }).select().single();
